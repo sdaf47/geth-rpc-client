@@ -11,35 +11,21 @@ var DefaultClient = NewClient("http://127.0.0.1:7545")
 func TestClient_LockAccount(t *testing.T) {
 	client := DefaultClient
 
-	accounts, err := client.Accounts()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count := len(accounts.Result)
-
 	pass := "super_test_pass"
-	account, err := client.NewAccount(pass)
+	accountResp, err := client.NewAccount(pass)
+	if accountResp.Error != nil {
+		t.Fatal(accountResp.Error)
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	accounts, err = client.Accounts()
+	lockResp, err := client.LockAccount(accountResp.Result)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if count+1 != len(accounts.Result) {
-		t.Fatal("Account not created")
-	}
-
-	res, err := client.LockAccount(account.Result)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !res.Result {
-		t.Fatalf("Account %s not locked", account.Result)
+	if lockResp.Error != nil {
+		t.Fatal(lockResp.Error.Message)
 	}
 
 }
@@ -47,36 +33,23 @@ func TestClient_LockAccount(t *testing.T) {
 func TestClient_UnlockAccount(t *testing.T) {
 	client := DefaultClient
 
-	accounts, err := client.Accounts()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count := len(accounts.Result)
-
 	pass := "super_test_pass"
-	account, err := client.NewAccount(pass)
+	accountResp, err := client.NewAccount(pass)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	accounts, err = client.Accounts()
-	if err != nil {
-		t.Fatal(err)
+	if accountResp.Error != nil {
+		t.Fatal(accountResp.Error.Message)
 	}
 
-	if count+1 != len(accounts.Result) {
-		t.Fatal("Account not created")
-	}
-
-	res, err := client.UnlockAccount(account.Result, pass, 25000)
+	res, err := client.UnlockAccount(accountResp.Result, pass, 25000)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if !res.Result {
-		t.Fatalf("Account %s not unlocked", account.Result)
+		t.Fatalf("Account %s not unlocked", accountResp.Result)
 	}
 }
 
@@ -88,59 +61,75 @@ func TestClient_SendTransaction(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	txBuilder := NewTransactionBuilder()
-
 	bResp0, err := client.GetBalance(accounts.Result[0], LatestBlock)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	b0 := bResp0.Result.BigInt()
+	if bResp0.Error != nil {
+		t.Fatal(bResp0.Error.Message)
+	}
 
 	bResp1, err := client.GetBalance(accounts.Result[1], LatestBlock)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	b1 := bResp1.Result.BigInt()
+	if bResp1.Error != nil {
+		t.Fatal(bResp1.Error.Message)
+	}
 
 	value := big.NewInt(1).Mul(big.NewInt(1000000000000000), big.NewInt(5000)) // *1000
 	gas := big.NewInt(21000)
 	gasPrice := big.NewInt(1000000000)
 
-	tx := txBuilder.
-		From(accounts.Result[0]).
-		To(accounts.Result[1]).
-		Gas(gas).
-		GasPrice(gasPrice).
-		To(accounts.Result[1]).
-		Value(value).
-		Build()
+	tx := &Transaction{
+		From:     &accounts.Result[0],
+		To:       &accounts.Result[1],
+		Gas:      NewQuantity(gas),
+		GasPrice: NewQuantity(gasPrice),
+		Value:    NewQuantity(value),
+	}
 
-	_, err = client.SendTransaction(tx)
+	txHashResp, err := client.SendTransaction(tx)
 	if err != nil {
 		t.Fatal(err)
 	}
+	if txHashResp.Error != nil {
+		t.Fatal("txHash is nil.", txHashResp.Error.Message)
+	}
+	txHash := *txHashResp.Result
 
-	// todo check transaction
-	time.Sleep(time.Second * 5)
+	pedning := 0
+	for {
+		time.Sleep(5 * time.Second)
+		pedning += 5
+
+		txResp, err := client.GetTransactionByHash(txHash)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if txResp.Result.BlockNumber != nil {
+			break
+		}
+		if pedning > 100 {
+			t.Fatal("Too long to wait for transaction", pedning)
+		}
+	}
 
 	nbResp0, err := client.GetBalance(accounts.Result[0], LatestBlock)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	nb0 := nbResp0.Result.BigInt()
+	if nbResp0.Error != nil {
+		t.Fatal(nbResp0.Error.Message)
+	}
 
 	nbResp1, err := client.GetBalance(accounts.Result[1], LatestBlock)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	nb1 := nbResp1.Result.BigInt()
-
-	if b0.Cmp(nb0) != 1 || b1.Cmp(nb1) != -1 {
-		t.Fatal("Transaction fail")
+	if nbResp1.Error != nil {
+		t.Fatal(nbResp1.Error.Message)
 	}
 
 }
@@ -154,20 +143,17 @@ func TestClient_SendTransaction2(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	txBuilder := NewTransactionBuilder()
-
 	value := big.NewInt(1000000)
 	gas := big.NewInt(21000)
 	gasPrice := big.NewInt(1000000000)
 
-	tx := txBuilder.
-		From(accounts.Result[0]).
-		To(accounts.Result[1]).
-		Gas(gas).
-		GasPrice(gasPrice).
-		To(accounts.Result[1]).
-		Value(value).
-		Build()
+	tx := &Transaction{
+		From:     &accounts.Result[0],
+		To:       &accounts.Result[1],
+		Gas:      NewQuantity(gas),
+		GasPrice: NewQuantity(gasPrice),
+		Value:    NewQuantity(value),
+	}
 
 	_, err = client.SendTransaction(tx)
 	if err != nil {
