@@ -185,12 +185,12 @@ func (c *Client) BlockNumber() (*QuantityResponse, error) {
 }
 
 // Returns the value from a storage position at a given address.
-func (c *Client) GetStorageAt(addr Address, position Quantity, block string) (*DataResponse, error) {
+func (c *Client) GetStorageAt(addr Address, index Quantity, block string) (*DataResponse, error) {
 	request := c.newRequest(EthGetStorageAt)
 
-	request.Params = []string{
-		string(addr),
-		string(position),
+	request.Params = []interface{}{
+		addr,
+		index,
 		block,
 	}
 	response := &DataResponse{}
@@ -333,12 +333,12 @@ func (c *Client) GetTransactionByHash(tx Hash) (*TransactionResponse, error) {
 }
 
 // Returns information about a transaction by block hash and transaction index position.
-func (c *Client) GetTransactionByBlockHashAndIndex(block Hash, position Quantity) (*TransactionResponse, error) {
+func (c *Client) GetTransactionByBlockHashAndIndex(block Hash, index Quantity) (*TransactionResponse, error) {
 	request := c.newRequest(EthGetTransactionByBlockHashAndIndex)
 
-	request.Params = []string{
-		string(block),
-		string(position),
+	request.Params = []interface{}{
+		block,
+		index,
 	}
 	response := &TransactionResponse{}
 
@@ -346,12 +346,12 @@ func (c *Client) GetTransactionByBlockHashAndIndex(block Hash, position Quantity
 }
 
 // Returns information about a transaction by block number and transaction index position.
-func (c *Client) GetTransactionByBlockNumberAndIndex(block string, position Quantity) (*TransactionResponse, error) {
+func (c *Client) GetTransactionByBlockNumberAndIndex(block string, index Quantity) (*TransactionResponse, error) {
 	request := c.newRequest(EthGetTransactionByBlockNumberAndIndex)
 
-	request.Params = []string{
-		string(block),
-		string(position),
+	request.Params = []interface{}{
+		block,
+		index,
 	}
 	response := &TransactionResponse{}
 
@@ -371,12 +371,12 @@ func (c *Client) GetTransactionReceipt(tx Hash) (*TransactionReceiptResponse, er
 }
 
 // Returns the receipt of a transaction by transaction hash.
-func (c *Client) GetUncleByBlockHashAndIndex(block Hash, position Quantity) (*BlockResponse, error) {
+func (c *Client) GetUncleByBlockHashAndIndex(block Hash, index Quantity) (*BlockResponse, error) {
 	request := c.newRequest(EthGetUncleByBlockHashAndIndex)
 
-	request.Params = []string{
-		string(block),
-		string(position),
+	request.Params = []interface{}{
+		block,
+		index,
 	}
 	response := &BlockResponse{}
 
@@ -384,12 +384,12 @@ func (c *Client) GetUncleByBlockHashAndIndex(block Hash, position Quantity) (*Bl
 }
 
 // Returns information about a uncle of a block by number and uncle index position.
-func (c *Client) GetUncleByBlockNumberAndIndex(block string, position Quantity) (*BlockResponse, error) {
+func (c *Client) GetUncleByBlockNumberAndIndex(block string, index Quantity) (*BlockResponse, error) {
 	request := c.newRequest(EthGetUncleByBlockNumberAndIndex)
 
-	request.Params = []string{
-		string(block),
-		string(position),
+	request.Params = []interface{}{
+		block,
+		index,
 	}
 	response := &BlockResponse{}
 
@@ -486,8 +486,8 @@ func (c *Client) NewPendingTransactionFilter() (*QuantityResponse, error) {
 func (c *Client) UninstallFilter(index Quantity) (*BooleanResponse, error) {
 	request := c.newRequest(EthUninstallFilter)
 
-	request.Params = []string{
-		string(index),
+	request.Params = []interface{}{
+		index,
 	}
 	response := &BooleanResponse{}
 
@@ -499,8 +499,8 @@ func (c *Client) UninstallFilter(index Quantity) (*BooleanResponse, error) {
 func (c *Client) GetFilterChanges(index Quantity) (*LogsResponse, error) {
 	request := c.newRequest(EthGetFilterChanges)
 
-	request.Params = []string{
-		string(index),
+	request.Params = []interface{}{
+		index,
 	}
 	response := &LogsResponse{}
 
@@ -511,8 +511,8 @@ func (c *Client) GetFilterChanges(index Quantity) (*LogsResponse, error) {
 func (c *Client) GetFilterLogs(index Quantity) (*LogsResponse, error) {
 	request := c.newRequest(EthGetFilterLogs)
 
-	request.Params = []string{
-		string(index),
+	request.Params = []interface{}{
+		index,
 	}
 	response := &LogsResponse{}
 
@@ -520,7 +520,7 @@ func (c *Client) GetFilterLogs(index Quantity) (*LogsResponse, error) {
 }
 
 // Returns an array of all logs matching filter with given id.
-func (c *Client) GetLogs(filter Filter) (*LogsResponse, error) {
+func (c *Client) GetLogs(filter *Filter) (*LogsResponse, error) {
 	request := c.newRequest(EthGetLogs)
 
 	request.Params = []interface{}{

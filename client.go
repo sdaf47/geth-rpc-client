@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
-	"fmt"
 )
 
 const ContentType = "application/json"
@@ -44,7 +43,6 @@ func NewClient(url string) (c *Client) {
 
 func (c *Client) newRequest(method string) (r *Request) {
 	id := c.requestIterator.Next()
-	fmt.Println(id, method)
 	return &Request{
 		Id:      id,
 		JsonRPC: "2.0",

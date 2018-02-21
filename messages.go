@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"fmt"
 )
 
 type RequestIterator interface {
@@ -21,9 +20,15 @@ type Request struct {
 	JsonRPC string      `json:"jsonrpc"`
 }
 
+type Error struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
 type Response struct {
 	Id      int    `json:"id"`
 	JsonRPC string `json:"jsonrpc"`
+	Error   *Error
 }
 
 type StringResponse struct {
@@ -88,12 +93,12 @@ type ByteBooleanResponse struct {
 
 type HashResponse struct {
 	*Response
-	Result Hash
+	Result *Hash
 }
 
 type TransactionResponse struct {
 	*Response
-	Result *Transaction
+	Result *TransactionResult
 }
 
 type TransactionReceiptResponse struct {
@@ -116,8 +121,6 @@ func (r *Request) jsonReader() io.Reader {
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println(string(br))
 
 	return bytes.NewReader(br)
 }
