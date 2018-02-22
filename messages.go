@@ -41,11 +41,6 @@ type DataResponse struct {
 	Result Data
 }
 
-type ContractResponse struct {
-	*Response
-	Result Contract
-}
-
 type BlockResponse struct {
 	*Response
 	Result *Block

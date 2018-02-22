@@ -30,10 +30,6 @@ const (
 	EthGetTransactionReceipt               = "eth_getTransactionReceipt"
 	EthGetUncleByBlockHashAndIndex         = "eth_getUncleByBlockHashAndIndex"
 	EthGetUncleByBlockNumberAndIndex       = "eth_getUncleByBlockNumberAndIndex"
-	EthGetCompilers                        = "eth_getCompilers"
-	EthCompileLLL                          = "eth_compileLLL"
-	EthCompileSolidity                     = "eth_compileSolidity"
-	EthCompileSerpent                      = "eth_compileSerpent"
 	EthNewFilter                           = "eth_newFilter"
 	EthNewBlockFilter                      = "eth_newBlockFilter"
 	EthNewPendingTransactionFilter         = "eth_newPendingTransactionFilter"
@@ -392,54 +388,6 @@ func (c *Client) GetUncleByBlockNumberAndIndex(block string, index Quantity) (*B
 		index,
 	}
 	response := &BlockResponse{}
-
-	return response, c.send(request, response)
-}
-
-// Returns a list of available compilers in the client.
-func (c *Client) GetCompilers() (*CompilersResponse, error) {
-	request := c.newRequest(EthGetCompilers)
-
-	response := &CompilersResponse{}
-
-	return response, c.send(request, response)
-}
-
-// Receives the contract code.
-// Returns compiled solidity code.
-func (c *Client) CompileSolidity(sourceCode string) (*ContractResponse, error) {
-	request := c.newRequest(EthCompileSolidity)
-
-	request.Params = []string{
-		sourceCode,
-	}
-	response := &ContractResponse{}
-
-	return response, c.send(request, response)
-}
-
-// Receives the contract code.
-// Returns compiled LLL code.
-func (c *Client) CompileLLL(sourceCode string) (*DataResponse, error) {
-	request := c.newRequest(EthCompileLLL)
-
-	request.Params = []string{
-		sourceCode,
-	}
-	response := &DataResponse{}
-
-	return response, c.send(request, response)
-}
-
-// Receives the contract code.
-// Returns compiled serpent code.
-func (c *Client) CompileSerpent(sourceCode string) (*DataResponse, error) {
-	request := c.newRequest(EthCompileSerpent)
-
-	request.Params = []string{
-		sourceCode,
-	}
-	response := &DataResponse{}
 
 	return response, c.send(request, response)
 }

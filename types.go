@@ -59,40 +59,6 @@ type Filter struct {
 	Topics    []Hash   `json:"topics"`
 }
 
-type Param struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type AbiDefinition struct {
-	Constant bool    `json:"constant"`
-	Inputs   []Param `json:"inputs"`
-	Outputs  []Param `json:"outputs"`
-	Name     string  `json:"name"`
-	Type     string  `json:"type"`
-}
-
-type ContractInfo struct {
-	// contract source code
-	Source string `json:"source"`
-
-	Language string `json:"language"`
-
-	LanguageVersion string `json:"languageVersion"`
-
-	CompilerVersion string `json:"compilerVersion"`
-
-	AbiDefinition AbiDefinition `json:"abiDefinition"`
-
-	UserDoc      interface{} `json:"userDoc"`
-	DeveloperDoc interface{} `json:"developerDoc"`
-}
-
-type Contract struct {
-	Code string       `json:"code"`
-	Info ContractInfo `json:"info"`
-}
-
 // For filters created with c.NewFilter (eth_newFilter) logs are object
 // todo https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-42
 type Log struct {

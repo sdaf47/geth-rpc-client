@@ -134,7 +134,71 @@ func TestClient_GetTransactionReceipt(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	gas := big.NewInt(100000)
+	gas := big.NewInt(124000)
+
+	tx := &Transaction{
+		From: &accounts.Result[0],
+		Gas:  NewQuantity(gas),
+		Data: Data(contractSource),
+	}
+
+	resp, err := client.SendTransaction(tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.Error != nil {
+		t.Fatal("txHash is nil.", resp.Error.Message)
+	}
+	txHash := *resp.Result
+	fmt.Println(txHash)
+
+	pedning := 0
+	for {
+		time.Sleep(5 * time.Second)
+		pedning += 5
+
+		txResp, err := client.GetTransactionByHash(txHash)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if txResp.Result.BlockNumber != nil {
+			break
+		}
+		if pedning > 100 {
+			t.Fatal("Too long to wait for transaction", pedning)
+		}
+	}
+
+	txReceiptResp, err := client.GetTransactionReceipt(txHash)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if txReceiptResp.Error != nil {
+		t.Fatal(txReceiptResp.Error.Message)
+	}
+
+}
+
+func TestClient_GetTransactionReceipt2(t *testing.T) {
+	client := DefaultClient
+
+	accounts, err := client.Accounts()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	contractSourceFile, err := os.OpenFile("example.contract.bin", os.O_RDONLY, 777)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	contractSource, err := ioutil.ReadAll(contractSourceFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gas := big.NewInt(124000)
 
 	tx := &Transaction{
 		From: &accounts.Result[0],
@@ -173,6 +237,21 @@ func TestClient_GetTransactionReceipt(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if txReceiptResp.Error != nil {
+		t.Fatal(txReceiptResp.Error.Message)
+	}
 
-	fmt.Println("contract address", txReceiptResp.Result.ContractAddress)
+	logsResp, err := client.GetLogs(&Filter{
+		Address: accounts.Result[0],
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if logsResp.Error != nil {
+		t.Fatal(logsResp.Error.Message)
+	}
+
+	for _, log := range logsResp.Result {
+		fmt.Println(log.Address, log.BlockNumber, log.TransactionHash)
+	}
 }
