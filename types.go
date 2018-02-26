@@ -55,14 +55,14 @@ type Compiler string
 type Filter struct {
 	FromBlock Quantity `json:"fromBlock"`
 	ToBlock   Quantity `json:"toBlock"`
-	Address   Address  `json:"address"`
+	Address   *Address  `json:"address"`
 	Topics    []Hash   `json:"topics"`
 }
 
 // For filters created with c.NewFilter (eth_newFilter) logs are object
 // todo https://github.com/ethereum/wiki/wiki/JSON-RPC#returns-42
 type Log struct {
-	Removed string `json:"removed"` // todo check
+	Removed bool `json:"removed"` // todo check
 
 	// Integer of the log index position in the block. null when its pending log.
 	LogIndex *Quantity `json:"logIndex"`
@@ -171,7 +171,7 @@ type TransactionReceipt struct {
 	GasUsed Quantity `json:"gasUsed"`
 
 	// The contract address created, if the transaction was a contract creation, otherwise null.
-	ContractAddress *Address `json:"contractAddress"`
+	ContractAddress Address `json:"contractAddress"`
 
 	// Array of log objects, which this transaction generated.
 	Logs []Log `json:"logs"`
